@@ -6,6 +6,15 @@
 
 ---
 
+## 零、在 IDEA 里打开（最快路径）
+
+1. IDEA 菜单 `File → Open`，选目录 `/Users/cheying/IdeaProjects/bank-risk-agent`（选到 `pom.xml` 那一层）
+2. 弹「Trust Project」点 Trust，Maven 会自动 import（第一次要下依赖，约 1-2 分钟）
+3. `Project Structure → SDK` 选 IDEA 自带的 JDK（我验证用的是 JBR 25），或本地 21+
+4. 跑 `com.riskagent.RiskAgentApplication` 的 main 方法，浏览器开 `http://localhost:8080`
+
+> 注意：从 IDEA 里直接 run 是 8080；用命令行 `./scripts/dev.sh` 也是 8080。
+
 ## 一、这个项目解决什么问题
 
 银行运营监督岗每天面对两类重复劳动：

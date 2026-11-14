@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>反洗钱与运营风险预警平台 · 交互原型 v2</title>
+<style>
+:root{
+  --bg:#F5F6F4; --card:#FFFFFF; --line:rgba(0,0,0,.10); --line2:rgba(0,0,0,.20);
+  --t1:#1C1C1A; --t2:#575653; --t3:#8A8984;
+  --blue:#185FA5; --blue-d:#0C447C; --blue-l:#E6F1FB; --blue-m:#B5D4F4;
+  --red:#A32D2D; --red-l:#FCEBEB; --amber:#8A5A0B; --amber-l:#FAEEDA;
+  --green:#0F6E56; --green-l:#E1F5EE; --r:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font-size:13px;line-height:1.6;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+button,select,input,textarea{font-family:inherit;font-size:13px}
+h1,h2,h3,h4{font-weight:500;margin:0}
+.hide{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+#login{min-height:100vh;display:grid;grid-template-columns:1fr 400px}
+.brand{background:#0C447C;color:#fff;padding:60px 56px;display:flex;flex-direction:column;justify-content:space-between}
+.brand h1{font-size:21px;letter-spacing:.5px}
+.brand .sub{color:#B5D4F4;font-size:12.5px;margin-top:6px}
+.brand .q{font-size:13.5px;color:#E6F1FB;max-width:400px;line-height:1.9}
+.brand .foot{font-size:11.5px;color:#85B7EB}
+.mark{width:32px;height:32px;border-radius:7px;background:#fff;color:#0C447C;display:flex;align-items:center;justify-content:center;font-size:15px}
+.loginbox{background:#fff;padding:56px 40px;display:flex;flex-direction:column;justify-content:center}
+.loginbox label{display:block;font-size:12px;color:var(--t2);margin:14px 0 5px}
+.loginbox input,.loginbox select{width:100%;padding:9px 11px;border:.5px solid var(--line2);border-radius:7px;background:#fff}
+.loginbox button{width:100%;margin-top:22px;padding:10px;border:0;border-radius:7px;background:var(--blue);color:#fff}
+.hint{margin-top:16px;font-size:11.5px;color:var(--t3);line-height:1.9}
+
+#app{display:grid;grid-template-columns:206px 1fr;min-height:100vh}
+aside{background:#fff;border-right:.5px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.logo{display:flex;align-items:center;gap:8px;padding:4px 8px 16px}
+.logo span{font-size:12.5px;font-weight:500;color:var(--blue-d);line-height:1.3}
+.nav{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:7px;color:var(--t2);cursor:pointer;font-size:12.5px}
+.nav:hover{background:var(--bg)}
+.nav.on{background:var(--blue-l);color:var(--blue-d)}
+.nav .n{margin-left:auto;font-size:11px;color:var(--red);background:var(--red-l);border-radius:9px;padding:0 6px}
+.me{margin-top:auto;border-top:.5px solid var(--line);padding:12px 8px 2px;display:flex;gap:8px;align-items:center}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--blue-l);color:var(--blue-d);display:flex;align-items:center;justify-content:center;font-size:11.5px}
+
+main{padding:18px 26px 56px;max-width:1200px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:16px}
+.top h2{font-size:16px}
+.top .path{font-size:11.5px;color:var(--t3);margin-top:3px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:var(--r);border:.5px solid var(--line);padding:12px 14px}
+.kpi span{font-size:11.5px;color:var(--t3)}
+.kpi b{display:block;font-size:22px;font-weight:500;margin-top:2px;line-height:1.3}
+.kpi b em{font-style:normal;font-size:11.5px;font-weight:400;color:var(--t3);margin-left:2px}
+.kpi i{font-style:normal;font-size:11px;color:var(--t3)}
+.card{background:#fff;border-radius:var(--r);border:.5px solid var(--line);padding:16px 18px;margin-bottom:14px}
+.card h3{font-size:12.5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card h3 small{font-weight:400;color:var(--t3);font-size:11.5px}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;color:var(--t3);font-weight:400;padding:7px 6px;border-bottom:.5px solid var(--line);white-space:nowrap;font-size:11.5px}
+td{padding:8px 6px;border-bottom:.5px solid var(--line)}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#FAFAF7}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;padding:0 6px;border-radius:4px;font-size:11px;line-height:1.7;white-space:nowrap}
+.t-high{background:var(--red-l);color:var(--red)}
+.t-mid{background:var(--amber-l);color:var(--amber)}
+.t-low{background:var(--green-l);color:var(--green)}
+.t-blue{background:var(--blue-l);color:var(--blue-d)}
+.t-gray{background:#F1EFE8;color:var(--t2)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:6px 10px;font-size:12px;margin:0}
+.kv dt{color:var(--t3)}
+.kv dd{margin:0}
+.btn{padding:6px 12px;border-radius:7px;border:.5px solid var(--line2);background:#fff;color:var(--t1)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{padding:3px 9px;font-size:11.5px}
+.quote{border-left:2px solid var(--blue-m);padding:1px 0 1px 10px;margin:8px 0;color:var(--t2);font-size:12px}
+.banner{background:var(--amber-l);border-radius:var(--r);padding:10px 14px;font-size:12px;color:#5A3B08;margin-bottom:14px}
+.banner.blue{background:var(--blue-l);color:var(--blue-d)}
+.trace{position:relative;padding-left:16px}
+.trace:before{content:"";position:absolute;left:3px;top:8px;bottom:8px;width:.5px;background:var(--line2)}
+.trace .step{position:relative;padding:2px 0 10px}
+.trace .step:before{content:"";position:absolute;left:-16px;top:7px;width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px #fff}
+.trace .step.done:before{background:var(--green)}
+.trace .step b{font-weight:500;font-size:12px}
+.trace .step p{margin:1px 0 0;color:var(--t3);font-size:11.5px}
+.chat{display:flex;flex-direction:column;gap:12px}
+.msg{max-width:80%;padding:10px 13px;border-radius:10px;font-size:12.5px}
+.msg.me{align-self:flex-end;background:var(--blue);color:#fff}
+.msg.bot{align-self:flex-start;background:#FAFAF7;border:.5px solid var(--line)}
+.cite{display:inline-block;background:var(--blue-l);color:var(--blue-d);border-radius:3px;padding:0 4px;font-size:10.5px;margin:0 1px}
+.src{border:.5px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:7px;font-size:11.5px;color:var(--t2);background:#fff}
+.src b{color:var(--t1);font-weight:500;display:block;margin-bottom:2px;font-size:11.5px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;font-size:12px}
+.bar{height:5px;border-radius:3px;background:#EDECE6;overflow:hidden;margin-bottom:9px}
+.bar>i{display:block;height:100%;background:var(--blue)}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--t2);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px}
+.note{font-size:11.5px;color:var(--t3);margin:8px 0 0;line-height:1.8}
+.countdown{background:var(--red-l);color:var(--red);border-radius:6px;padding:1px 7px;font-size:11px;white-space:nowrap}
+.countdown.ok{background:var(--green-l);color:var(--green)}
+textarea{width:100%;border:.5px solid var(--line2);border-radius:7px;padding:9px 11px;font-size:12.5px;line-height:1.7;resize:vertical}
+.field{margin-top:10px}
+.field label{display:block;font-size:11.5px;color:var(--t2);margin-bottom:4px}
+.field label em{font-style:normal;color:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.rolebar{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t3)}
+.rolebar select{padding:4px 8px;border:.5px solid var(--line2);border-radius:6px;background:#fff}
+@media(max-width:920px){#app{grid-template-columns:1fr}aside{display:none}.grid{grid-template-columns:1fr}#login{grid-template-columns:1fr}.brand{display:none}}
+</style>
+</head>
+<body>
+<h2 class="sr">反洗钱与运营风险预警平台的交互原型，含风险驾驶舱、预警工单、工单处置、客户尽职调查、报送管理、制度与口径、评测与审计七个模块</h2>
+
+<div id="login">
+  <div class="brand">
+    <div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="mark">险</div>
+        <div>
+          <h1>反洗钱与运营风险预警平台</h1>
+          <div class="sub">AML &amp; Operational Risk Alert Platform</div>
+        </div>
+      </div>
+      <p class="q" style="margin-top:36px">规则引擎判定，大模型起草分析过程，<br>人工确认并承担最终责任。</p>
+    </div>
+    <div class="foot">原型演示 · 客户与交易数据均为虚构 · 仅用于方案沟通</div>
+  </div>
+  <div class="loginbox">
+    <h2 style="font-size:15px">统一身份认证</h2>
+    <p style="color:var(--t3);font-size:11.5px;margin:4px 0 0">对接行内 SSO / LDAP，按角色加载菜单与数据权限</p>
+    <label>工号</label>
+    <input value="L0231" readonly>
+    <label>密码</label>
+    <input type="password" value="********">
+    <label>登录角色</label>
+    <select id="loginRole">
+      <option value="staff">风控专员（可处置）</option>
+      <option value="lead">风控主管（可复核）</option>
+      <option value="aml">反洗钱岗（可报送）</option>
+      <option value="audit">内审（只读）</option>
+    </select>
+    <label>所属机构</label>
+    <input value="总行 · 运营风险管理部（机构号 0001）" readonly>
+    <button onclick="enter()">登 录</button>
+    <p class="hint">演示环境无校验，直接点登录。<br>切换角色可以看到按钮与权限的差异。</p>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <aside>
+    <div class="logo"><div class="mark" style="width:26px;height:26px;font-size:13px;border-radius:6px;background:#185FA5;color:#fff">险</div><span>风险预警平台<br><span style="font-weight:400;color:var(--t3);font-size:11px">v2.4.0</span></span></div>
+    <div class="nav on" data-p="dash" onclick="go('dash')"><i class="dot"></i>风险驾驶舱</div>
+    <div class="nav" data-p="list" onclick="go('list')"><i class="dot"></i>预警工单<span class="n">23</span></div>
+    <div class="nav" data-p="detail" onclick="go('detail')"><i class="dot"></i>工单处置</div>
+    <div class="nav" data-p="customer" onclick="go('customer')"><i class="dot"></i>客户尽职调查</div>
+    <div class="nav" data-p="report" onclick="go('report')"><i class="dot"></i>报送管理<span class="n">7</span></div>
+    <div class="nav" data-p="qa" onclick="go('qa')"><i class="dot"></i>制度与口径</div>
+    <div class="nav" data-p="audit" onclick="go('audit')"><i class="dot"></i>评测与审计</div>
+    <div class="me">
+      <div class="avatar">雷</div>
+      <div style="line-height:1.35">
+        <div style="font-size:12px">雷犇</div>
+        <div style="font-size:11px;color:var(--t3)" id="meRole">风控专员</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div id="p-dash">
+      <div class="top">
+        <div><h2>风险驾驶舱</h2><div class="path">运营风险管理部 / 驾驶舱　·　数据截止 2026-11-14 18:20</div></div>
+        <div class="tools">
+          <div class="rolebar">当前角色
+            <select id="roleSel" onchange="setRole(this.value)">
+              <option value="staff">风控专员</option>
+              <option value="lead">风控主管</option>
+              <option value="aml">反洗钱岗</option>
+              <option value="audit">内审（只读）</option>
+            </select>
+          </div>
+          <button class="btn" onclick="go('list')">全部待办</button>
+        </div>
+      </div>
+
+      <div class="banner">今日 18:00 后新增 4 条高风险预警未领取，其中 1 条为名单疑似命中，需立即处理并同步报送。</div>
+
+      <div class="kpis">
+        <div class="kpi"><span>今日新增预警</span><b>128<em>条</em></b><i>较昨日 +12</i></div>
+        <div class="kpi"><span>待领取</span><b style="color:#A32D2D">23<em>条</em></b><i>高风险 6 条</i></div>
+        <div class="kpi"><span>处置中</span><b style="color:#185FA5">11<em>条</em></b><i>平均已占用 42 分钟</i></div>
+        <div class="kpi"><span>临近时限</span><b style="color:#8A5A0B">3<em>条</em></b><i>剩余不足 1 个工作日</i></div>
+        <div class="kpi"><span>平均处置时长</span><b>18<em>分钟</em></b><i>上线前 51 分钟</i></div>
+        <div class="kpi"><span>建议采纳率</span><b>76<em>%</em></b><i>人工改写 19%</i></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>近 7 日预警与办结<small>条</small></h3>
+          <svg viewBox="0 0 520 170" width="100%" role="img">
+            <line x1="34" y1="16" x2="34" y2="132" stroke="rgba(0,0,0,.08)"/>
+            <line x1="34" y1="132" x2="504" y2="132" stroke="rgba(0,0,0,.08)"/>
+            <line x1="34" y1="86" x2="504" y2="86" stroke="rgba(0,0,0,.05)"/>
+            <line x1="34" y1="40" x2="504" y2="40" stroke="rgba(0,0,0,.05)"/>
+            <polyline fill="none" stroke="#185FA5" stroke-width="2" points="54,92 128,78 202,100 276,58 350,66 424,42 492,50"/>
+            <polyline fill="none" stroke="#0F6E56" stroke-width="1.5" stroke-dasharray="4 3" points="54,112 128,104 202,114 276,90 350,94 424,80 492,86"/>
+            <circle cx="492" cy="50" r="3" fill="#185FA5"/>
+            <circle cx="492" cy="86" r="3" fill="#0F6E56"/>
+            <text x="34" y="148" font-size="10.5" fill="#8A8984">11-08</text>
+            <text x="182" y="148" font-size="10.5" fill="#8A8984">11-10</text>
+            <text x="336" y="148" font-size="10.5" fill="#8A8984">11-12</text>
+            <text x="466" y="148" font-size="10.5" fill="#8A8984">11-14</text>
+            <text x="8" y="44" font-size="10.5" fill="#8A8984">150</text>
+            <text x="14" y="90" font-size="10.5" fill="#8A8984">75</text>
+          </svg>
+          <div class="legend"><span><i style="background:#185FA5"></i>新增预警</span><span><i style="background:#0F6E56"></i>办结</span></div>
+        </div>
+
+        <div class="card">
+          <h3>监测模型命中分布<small>今日</small></h3>
+          <div class="row"><span>短期分散转入集中转出</span><span class="mono">46</span></div>
+          <div class="bar"><i style="width:88%"></i></div>
+          <div class="row"><span>拆分交易规避报告阈值</span><span class="mono">31</span></div>
+          <div class="bar"><i style="width:59%"></i></div>
+          <div class="row"><span>账户异常开销户</span><span class="mono">28</span></div>
+          <div class="bar"><i style="width:53%"></i></div>
+          <div class="row"><span>名单与涉诈关联</span><span class="mono">15</span></div>
+          <div class="bar"><i style="width:29%"></i></div>
+          <div class="row"><span>内部操作风险</span><span class="mono">8</span></div>
+          <div class="bar"><i style="width:15%"></i></div>
+          <p class="note">模型版本 2026.09；规则库 v2.3.1；近 30 日误报率 41%，已列入阈值调优。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>待处置预警<small>按剩余时限升序</small></h3>
+        <table>
+          <thead><tr><th>工单号</th><th>客户</th><th>类型</th><th>等级</th><th>命中规则</th><th>金额（元）</th><th>剩余时限</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0001</td><td>某某商贸有限公司</td><td>可疑交易</td><td><span class="tag t-high">高</span></td><td class="mono">R-AML-017</td><td class="num">3,200,000.00</td><td><span class="countdown">1 天 4 小时</span></td><td><span class="tag t-blue">处置中</span></td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0002</td><td>王某（个人）</td><td>开销户异常</td><td><span class="tag t-high">高</span></td><td class="mono">R-ACC-008</td><td class="num">—</td><td><span class="countdown">2 天</span></td><td><span class="tag t-gray">待领取</span></td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0003</td><td>李某（个人）</td><td>非柜面异常</td><td><span class="tag t-mid">中</span></td><td class="mono">R-NCF-031</td><td class="num">486,000.00</td><td><span class="countdown ok">3 天 6 小时</span></td><td><span class="tag t-gray">待领取</span></td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0004</td><td>某贸易有限公司</td><td>名单命中</td><td><span class="tag t-high">高</span></td><td class="mono">L-FRD-011</td><td class="num">920,000.00</td><td><span class="countdown">当日 24:00</span></td><td><span class="tag t-mid">已升级</span></td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261113-0087</td><td>某科技有限公司</td><td>大额+可疑</td><td><span class="tag t-mid">中</span></td><td class="mono">R-AML-042</td><td class="num">1,150,000.00</td><td><span class="countdown ok">4 天</span></td><td><span class="tag t-low">待复核</span></td></tr>
+          </tbody>
+        </table>
+        <p class="note">剩余时限按工作日计算，法定节假日顺延；名单类预警不适用 5 个工作日时限，须立即处理。</p>
+      </div>
+    </div>
+
+    <div id="p-list" class="hide">
+      <div class="top">
+        <div><h2>预警工单</h2><div class="path">共 128 条　待领取 23　处置中 11　待复核 3</div></div>
+        <div class="tools"><button class="btn">导出 Excel</button><button class="btn primary" onclick="go('detail')">打开首条</button></div>
+      </div>
+      <div class="card" style="padding:12px 16px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input placeholder="工单号 / 客户号 / 账号" style="width:220px;padding:7px 10px;border:.5px solid var(--line2);border-radius:7px">
+          <select style="padding:7px 10px;border:.5px solid var(--line2);border-radius:7px"><option>全部等级</option><option>高</option><option>中</option><option>低</option></select>
+          <select style="padding:7px 10px;border:.5px solid var(--line2);border-radius:7px"><option>全部状态</option><option>待领取</option><option>处置中</option><option>待复核</option><option>已归档</option></select>
+          <select style="padding:7px 10px;border:.5px solid var(--line2);border-radius:7px"><option>全部机构</option><option>城东支行</option><option>高新支行</option></select>
+          <button class="btn primary">查询</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>工单号</th><th>客户</th><th>类型</th><th>等级</th><th>命中规则</th><th>模型分</th><th>金额（元）</th><th>生成时间</th><th>剩余时限</th><th>状态</th><th>处理人</th></tr></thead>
+          <tbody>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0001</td><td>某某商贸有限公司</td><td>可疑交易</td><td><span class="tag t-high">高</span></td><td class="mono">R-AML-017</td><td class="mono">0.87</td><td class="num">3,200,000.00</td><td>11-13 23:41</td><td><span class="countdown">1 天 4 小时</span></td><td><span class="tag t-blue">处置中</span></td><td>雷犇</td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0002</td><td>王某</td><td>开销户异常</td><td><span class="tag t-high">高</span></td><td class="mono">R-ACC-008</td><td class="mono">0.81</td><td class="num">—</td><td>11-14 09:12</td><td><span class="countdown">2 天</span></td><td><span class="tag t-gray">待领取</span></td><td>—</td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0003</td><td>李某</td><td>非柜面异常</td><td><span class="tag t-mid">中</span></td><td class="mono">R-NCF-031</td><td class="mono">0.68</td><td class="num">486,000.00</td><td>11-14 10:05</td><td><span class="countdown ok">3 天 6 小时</span></td><td><span class="tag t-gray">待领取</span></td><td>—</td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261114-0004</td><td>某贸易有限公司</td><td>名单命中</td><td><span class="tag t-high">高</span></td><td class="mono">L-FRD-011</td><td class="mono">—</td><td class="num">920,000.00</td><td>11-14 08:30</td><td><span class="countdown">当日 24:00</span></td><td><span class="tag t-mid">已升级</span></td><td>陈静</td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261113-0087</td><td>某科技有限公司</td><td>大额+可疑</td><td><span class="tag t-mid">中</span></td><td class="mono">R-AML-042</td><td class="mono">0.74</td><td class="num">1,150,000.00</td><td>11-13 21:16</td><td><span class="countdown ok">4 天</span></td><td><span class="tag t-low">待复核</span></td><td>张伟</td></tr>
+            <tr onclick="go('detail')"><td class="mono">YJ-20261113-0076</td><td>赵某</td><td>非柜面异常</td><td><span class="tag t-low">低</span></td><td class="mono">R-NCF-012</td><td class="mono">0.52</td><td class="num">52,000.00</td><td>11-13 07:48</td><td><span class="countdown ok">已办结</span></td><td><span class="tag t-gray">已归档</span></td><td>雷犇</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="p-detail" class="hide">
+      <div class="top">
+        <div>
+          <h2>YJ-20261114-0001 <span class="tag t-high" style="vertical-align:2px">高风险</span> <span class="tag t-blue" style="vertical-align:2px">处置中</span></h2>
+          <div class="path">可疑交易 / 大额交易　·　某某商贸有限公司　·　3,200,000.00 CNY　·　生成于 11-13 23:41　·　<span class="countdown">剩余 1 天 4 小时</span></div>
+        </div>
+        <div class="tools"><button class="btn" onclick="go('list')">返回列表</button></div>
+      </div>
+
+      <div class="banner" id="roleBanner">Agent 只起草「分析过程记录」与处置建议，不代你决策。提交后仍需你确认署名，操作全程留痕（第十四条、第二十二条）。</div>
+
+      <div class="grid">
+        <div>
+          <div class="card">
+            <h3>客户与账户<small>来源：客户信息系统 / 核心　·　11-14 18:10 同步</small></h3>
+            <dl class="kv">
+              <dt>客户名称</dt><dd>某某商贸有限公司（对公 · 客户号 C0092317）</dd>
+              <dt>统一社会信用</dt><dd class="mono">9144 0300 MA5F **** 2X</dd>
+              <dt>受益所有人</dt><dd>陈某（持股 65%，已识别，2025-06 更新）</dd>
+              <dt>风险等级</dt><dd><span class="tag t-high">高风险</span> 上次评定 2026-03-12　下次定期审核 2027-03-12</dd>
+              <dt>开户信息</dt><dd>城东支行（3102）　开户 2023-08-17　基本户</dd>
+              <dt>账户状态</dt><dd>正常　·　非柜面权限 未限制</dd>
+              <dt>近 30 日交易</dt><dd>转入 46 笔 / 320.0 万　转出 2 笔 / 315.0 万　对手方 41 个</dd>
+            </dl>
+          </div>
+
+          <div class="card">
+            <h3>命中规则与模型评分<small>规则库 v2.3.1 · 可回溯</small></h3>
+            <div class="row"><span><b style="font-weight:500">R-AML-017</b>　短期内资金分散转入、集中转出</span><span><span class="tag t-high">命中</span> <span class="mono">0.87 / 阈值 0.70</span></span></div>
+            <div class="quote">3 个交易日内转入 46 笔、合计 320.0 万元，单笔均低于 5 万元；第 3 日 23:40–23:47 两笔转出合计 315.0 万元，收付方向与金额结构显著异常。</div>
+            <div class="row"><span><b style="font-weight:500">R-AML-042</b>　拆分交易规避报告阈值</span><span><span class="tag t-high">命中</span> <span class="mono">0.91 / 阈值 0.75</span></span></div>
+            <div class="quote">41 笔转入落在 4.80–4.95 万元区间，占比 89%，与该客户历史金额分布（均值 12.6 万、标准差 4.1 万）偏离度 3.2σ。</div>
+            <div class="row"><span><b style="font-weight:500">L-FRD-011</b>　涉诈关注名单关联</span><span><span class="tag t-mid">疑似</span> <span class="mono">关联强度 0.72</span></span></div>
+            <div class="quote">对手方 2 个账户命中行内涉诈关注名单（名单版本 2026-11-13），关联路径为客户名下账户与其发生过 2 笔以上资金往来。</div>
+            <p class="note">规则命中仅代表需人工分析，不构成可疑交易认定。</p>
+          </div>
+
+          <div class="card">
+            <h3>关键交易流水<small>共 48 笔，展示金额最大的 6 笔</small></h3>
+            <table>
+              <thead><tr><th>时间</th><th>借贷</th><th>金额（元）</th><th>渠道</th><th>对手方</th><th>地区</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">11-11 09:12</td><td>转入</td><td class="num">48,000.00</td><td>手机银行</td><td>深圳市某贸易有限公司</td><td>广东深圳</td></tr>
+                <tr><td class="mono">11-11 14:33</td><td>转入</td><td class="num">49,000.00</td><td>网银</td><td>陈某</td><td>广东东莞</td></tr>
+                <tr><td class="mono">11-12 10:07</td><td>转入</td><td class="num">48,500.00</td><td>手机银行</td><td>广州市某供应链</td><td>广东广州</td></tr>
+                <tr><td class="mono">11-13 23:40</td><td><span style="color:#A32D2D">转出</span></td><td class="num">1,600,000.00</td><td>网银</td><td>某某供应链管理有限公司</td><td>广东广州</td></tr>
+                <tr><td class="mono">11-13 23:47</td><td><span style="color:#A32D2D">转出</span></td><td class="num">1,550,000.00</td><td>网银</td><td>某某电子科技有限公司</td><td>广东深圳</td></tr>
+                <tr><td class="mono">11-13 23:52</td><td>转出</td><td class="num">1,000.00</td><td>网银</td><td>测试户名</td><td>广东深圳</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>关联账户<small>2 跳以内，含名单命中标记</small></h3>
+            <svg viewBox="0 0 520 210" width="100%" role="img">
+              <line x1="260" y1="105" x2="120" y2="52" stroke="rgba(0,0,0,.18)"/>
+              <line x1="260" y1="105" x2="120" y2="158" stroke="rgba(0,0,0,.18)"/>
+              <line x1="260" y1="105" x2="400" y2="52" stroke="rgba(0,0,0,.18)"/>
+              <line x1="260" y1="105" x2="400" y2="158" stroke="rgba(163,45,45,.45)" stroke-dasharray="3 3"/>
+              <rect x="196" y="82" width="128" height="46" rx="7" fill="#E6F1FB" stroke="#185FA5" stroke-width=".5"/>
+              <text x="260" y="101" text-anchor="middle" font-size="11.5" fill="#0C447C">某某商贸（本户）</text>
+              <text x="260" y="117" text-anchor="middle" font-size="10.5" fill="#185FA5">基本户 3102</text>
+              <rect x="42" y="30" width="156" height="44" rx="7" fill="#F1EFE8" stroke="rgba(0,0,0,.2)" stroke-width=".5"/>
+              <text x="120" y="48" text-anchor="middle" font-size="11" fill="#2C2C2A">某某供应链管理</text>
+              <text x="120" y="63" text-anchor="middle" font-size="10.5" fill="#575653">转出 160 万 · 1 笔</text>
+              <rect x="42" y="136" width="156" height="44" rx="7" fill="#F1EFE8" stroke="rgba(0,0,0,.2)" stroke-width=".5"/>
+              <text x="120" y="154" text-anchor="middle" font-size="11" fill="#2C2C2A">陈某（受益所有人）</text>
+              <text x="120" y="169" text-anchor="middle" font-size="10.5" fill="#575653">转入 49,000 · 3 笔</text>
+              <rect x="322" y="30" width="156" height="44" rx="7" fill="#FCEBEB" stroke="rgba(163,45,45,.4)" stroke-width=".5"/>
+              <text x="400" y="48" text-anchor="middle" font-size="11" fill="#A32D2D">某电子科技（名单）</text>
+              <text x="400" y="63" text-anchor="middle" font-size="10.5" fill="#A32D2D">转出 155 万 · 名单命中</text>
+              <rect x="322" y="136" width="156" height="44" rx="7" fill="#FCEBEB" stroke="rgba(163,45,45,.4)" stroke-width=".5"/>
+              <text x="400" y="154" text-anchor="middle" font-size="11" fill="#A32D2D">某个人账户（名单）</text>
+              <text x="400" y="169" text-anchor="middle" font-size="10.5" fill="#A32D2D">2 笔往来 · 关联 0.72</text>
+            </svg>
+          </div>
+
+          <div class="card">
+            <h3>分析过程记录<small>必填项 · Agent 起草，可编辑</small></h3>
+            <p style="margin:0 0 8px;color:var(--t2);font-size:12px">客户为 2023 年开户的商贸类企业，注册资本 500 万元，主营电子产品批发。近 3 日出现与经营规模明显不符的资金集中收付，且转入金额高度集中在大额报告阈值以下，具备拆分特征。经核查，两个转出对手方中一个在行内涉诈关注名单内，关联强度 0.72；客户未提供与交易规模匹配的合同或发票。综合判断，该交易与客户身份、经营背景不符，且存在规避报告阈值的合理怀疑。</p>
+            <div class="field">
+              <label>处置结论 <em>*</em></label>
+              <select style="width:100%;padding:8px 10px;border:.5px solid var(--line2);border-radius:7px">
+                <option>认定为可疑交易，提交可疑交易报告</option>
+                <option>暂不认定，补充尽调后重新评估</option>
+                <option>排除，记录排除理由后归档</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>补充说明（可选）</label>
+              <textarea rows="2" placeholder="如已电话联系客户核实、已要求补充合同等"></textarea>
+            </div>
+            <p class="note">依据第十四条：不作为可疑交易报告的，应当记录分析排除的合理理由；确认为可疑交易的，报告中需完整记录客户身份、交易、行为特征的分析过程。</p>
+            <div class="actions" id="actStaff">
+              <button class="btn primary" onclick="submitDispose()">提交并生成报告</button>
+              <button class="btn" onclick="excludeTicket()">排除并归档</button>
+              <button class="btn">退回补录</button>
+              <button class="btn">升级至主管</button>
+            </div>
+            <div class="actions hide" id="actLead">
+              <button class="btn primary" onclick="alert('已复核通过，提交至反洗钱岗生成报告。')">复核通过</button>
+              <button class="btn">退回经办</button>
+            </div>
+            <div class="actions hide" id="actAml">
+              <button class="btn primary" onclick="go('report')">生成可疑交易报告</button>
+              <button class="btn">标记为待补正</button>
+            </div>
+            <div class="actions hide" id="actAudit">
+              <button class="btn" onclick="alert('审计角色仅可查看与导出，不能修改处置结论。')">导出操作留痕</button>
+            </div>
+            <p class="note" id="msg"></p>
+          </div>
+
+          <div class="card">
+            <h3>Agent 处置建议<small>qwen2.5 · 生成 18:14 · 耗时 3.4s · 置信度 中高</small></h3>
+            <p style="margin:0 0 4px"><b style="font-weight:500">建议</b>　认定为可疑交易并提交报告，同时限制非柜面交易权限、提请强化尽职调查。</p>
+            <div class="quote">金融机构应当在按本机构可疑交易报告内部操作规程确认为可疑交易后，及时以电子方式提交可疑交易报告，最迟不超过 5 个工作日<span class="cite">[1]</span>。<br>对交易金额、频率、流向与客户身份、经营背景明显不符的，应采取强化尽职调查措施<span class="cite">[2]</span>。</div>
+            <p style="margin:10px 0 4px"><b style="font-weight:500">建议动作</b></p>
+            <ol style="margin:0;padding-left:16px;color:var(--t2);font-size:12px;line-height:1.95">
+              <li>认定可疑交易，5 个工作日内生成并提交报告（剩余 1 天 4 小时）</li>
+              <li>限制非柜面交易权限，保留柜面业务与工资代发</li>
+              <li>发起强化尽职调查：要求提供合同、发票、物流单据</li>
+              <li>本次交易同时满足非自然人 200 万元以上划转标准，需<b style="font-weight:500">另行提交大额交易报告</b></li>
+            </ol>
+            <p class="note">模型提示：客户与名单账户的关联强度 0.72 刚过阈值，建议人工复核关联是否成立，不宜作为唯一依据。</p>
+            <p class="note" id="adopted"></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>工具调用轨迹<small>4 次 · 合计 2.1s</small></h3>
+            <div class="trace">
+              <div class="step done"><b>query_rule_hits</b><p>规则明细与模型分 · 320ms</p></div>
+              <div class="step done"><b>get_account_profile</b><p>交易特征、历史偏离度 · 610ms</p></div>
+              <div class="step done"><b>search_similar_cases</b><p>相似案例 3 条，2 条最终认定 · 480ms</p></div>
+              <div class="step done"><b>draft_analysis</b><p>起草分析过程与建议 · 690ms</p></div>
+            </div>
+            <p class="note">每次调用记录入参、出参与耗时，可在评测与审计模块回放。</p>
+          </div>
+
+          <div class="card">
+            <h3>流程与时限</h3>
+            <div class="trace">
+              <div class="step done"><b>规则命中 · 生成工单</b><p>11-13 23:41　系统</p></div>
+              <div class="step done"><b>领取</b><p>11-14 09:05　雷犇</p></div>
+              <div class="step done"><b>Agent 起草</b><p>11-14 18:14　系统</p></div>
+              <div class="step"><b>待处置提交</b><p>当前节点</p></div>
+              <div class="step"><b>主管复核</b><p>待进入</p></div>
+              <div class="step"><b>报送与回执</b><p>待进入</p></div>
+            </div>
+            <p class="note">时限依据：第十五条 5 个工作日；第二十八条 收到补正通知后 5 个工作日内补正。</p>
+          </div>
+
+          <div class="card">
+            <h3>关联动作</h3>
+            <dl class="kv">
+              <dt>大额报告</dt><dd>已生成 1 笔，待报送（LTR-20261114-0312）</dd>
+              <dt>历史预警</dt><dd>2 次，均排除归档</dd>
+              <dt>相似案例</dt><dd>3 条，2 条认定</dd>
+              <dt>复核人</dt><dd>陈静（主管）</dd>
+              <dt>留痕</dt><dd>已记录，保存 5 年</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="p-customer" class="hide">
+      <div class="top">
+        <div><h2>客户尽职调查 · 某某商贸有限公司</h2><div class="path">客户号 C0092317　·　风险等级 高　·　上次评定 2026-03-12</div></div>
+        <div class="tools"><button class="btn">发起强化尽调</button><button class="btn">调整风险等级</button></div>
+      </div>
+      <div class="banner">高风险客户需至少每年审核 1 次，本客户下次定期审核日为 2027-03-12，当前剩余 118 天。</div>
+      <div class="grid">
+        <div class="card">
+          <h3>基本信息</h3>
+          <dl class="kv">
+            <dt>客户类型</dt><dd>非自然人 · 有限责任公司</dd>
+            <dt>注册资本</dt><dd>500.00 万元（实缴 500.00 万元）</dd>
+            <dt>经营范围</dt><dd>电子产品批发、供应链管理</dd>
+            <dt>注册地址</dt><dd>广东省深圳市南山区（已实地查访 2025-06-18）</dd>
+            <dt>受益所有人</dt><dd>陈某 65%、李某 35%（均已识别）</dd>
+            <dt>开户机构</dt><dd>城东支行 3102</dd>
+            <dt>开立产品</dt><dd>基本户、网银、手机银行、POS 收单</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <h3>风险要素</h3>
+          <div class="row"><span>客户风险</span><span class="tag t-high">高</span></div>
+          <div class="row"><span>地域风险</span><span class="tag t-mid">中</span></div>
+          <div class="row"><span>产品 / 渠道风险</span><span class="tag t-mid">中</span></div>
+          <div class="row"><span>行业风险</span><span class="tag t-high">高</span></div>
+          <p class="note">评分卡 2026.06 版；高风险由「行业 + 交易异常」两项驱动。</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>历史预警与尽调记录</h3>
+        <table>
+          <thead><tr><th>日期</th><th>类型</th><th>结论</th><th>经办</th><th>备注</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">2026-11-14</td><td>可疑交易</td><td><span class="tag t-blue">处置中</span></td><td>雷犇</td><td>YJ-20261114-0001</td></tr>
+            <tr><td class="mono">2026-05-21</td><td>大额可疑</td><td><span class="tag t-gray">排除</span></td><td>张伟</td><td>补充合同后排除</td></tr>
+            <tr><td class="mono">2026-03-12</td><td>定期审核</td><td><span class="tag t-low">完成</span></td><td>陈静</td><td>等级由中调高</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="p-report" class="hide">
+      <div class="top">
+        <div><h2>报送管理</h2><div class="path">大额交易报告 LTR　·　可疑交易报告 STR　·　报送对象：中国反洗钱监测分析中心</div></div>
+        <div class="tools"><button class="btn">生成报送文件</button><button class="btn primary">立即报送</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>待报送</span><b style="color:#A32D2D">7<em>笔</em></b><i>最迟剩余 1 天</i></div>
+        <div class="kpi"><span>今日已报送</span><b>34<em>笔</em></b><i>成功率 100%</i></div>
+        <div class="kpi"><span>回执待处理</span><b>2<em>笔</em></b><i>含 1 笔补正通知</i></div>
+        <div class="kpi"><span>补正时限</span><b style="color:#8A5A0B">3<em>天</em></b><i>收到通知起 5 个工作日</i></div>
+      </div>
+      <div class="card">
+        <h3>待报送批次<small>批次号 BT-20261114-03</small></h3>
+        <table>
+          <thead><tr><th>报告类型</th><th>关联工单</th><th>客户</th><th>金额（元）</th><th>生成时间</th><th>剩余时限</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>可疑交易报告 STR</td><td class="mono">YJ-20261114-0001</td><td>某某商贸有限公司</td><td class="num">3,200,000.00</td><td class="mono">11-14 18:20</td><td><span class="countdown">1 天 4 小时</span></td><td><span class="tag t-mid">待复核</span></td></tr>
+            <tr><td>大额交易报告 LTR</td><td class="mono">LTR-20261114-0312</td><td>某某商贸有限公司</td><td class="num">3,150,000.00</td><td class="mono">11-14 18:20</td><td><span class="countdown ok">4 天 6 小时</span></td><td><span class="tag t-blue">待报送</span></td></tr>
+            <tr><td>可疑交易报告 STR</td><td class="mono">YJ-20261114-0004</td><td>某贸易有限公司</td><td class="num">920,000.00</td><td class="mono">11-14 09:10</td><td><span class="countdown">当日 24:00</span></td><td><span class="tag t-high">紧急</span></td></tr>
+            <tr><td>可疑交易报告 STR</td><td class="mono">YJ-20261113-0087</td><td>某科技有限公司</td><td class="num">1,150,000.00</td><td class="mono">11-13 22:40</td><td><span class="countdown ok">3 天</span></td><td><span class="tag t-gray">已报送</span></td></tr>
+          </tbody>
+        </table>
+        <p class="note">名单类与涉恐类可疑交易不适用 5 个工作日时限，须立即报送并同时报告当地人民银行（第十七条、第十八条）。</p>
+      </div>
+    </div>
+
+    <div id="p-qa" class="hide">
+      <div class="top"><div><h2>制度与口径</h2><div class="path">知识库：制度 5 篇 · 监管文件 3 份 · 案例 12 个 · 更新至 2026-11-10</div></div></div>
+      <div class="card">
+        <div class="chat">
+          <div class="msg me">夜间非柜面转账多少笔会触发预警？</div>
+          <div class="msg bot">
+            22:00 至次日 6:00，同一账户非柜面转出达到 <b style="font-weight:500">3 笔或累计 5 万元</b>即触发「夜间异常交易」预警<span class="cite">[1]</span>。<br>
+            若同时满足「首次交易对手」且「单笔低于 5 万」，风险等级上调一级<span class="cite">[2]</span>。
+            <div class="src"><b>[1] 非柜面渠道异常交易监测规则 · 3.1</b>22:00–06:00 时段内，同一账户非柜面转出笔数 ≥3 笔或累计金额 ≥5 万元，触发预警，初始等级为中。</div>
+            <div class="src"><b>[2] 预警工单分级与分派流程 · 2.4</b>涉及首次交易对手且存在金额拆分特征的，风险等级上调一级，最短处置时限同步收紧。</div>
+          </div>
+          <div class="msg me">排除掉的预警需要写理由吗？</div>
+          <div class="msg bot">
+            需要，而且是<b style="font-weight:500">强制项</b><span class="cite">[3]</span>。<br>
+            法规要求：对通过监测标准筛选出的交易进行人工分析并记录分析过程；不作为可疑交易报告的，应当记录分析排除的合理理由。系统里「排除并归档」按钮会强制校验理由字段。
+            <div class="src"><b>[3] 金融机构大额交易和可疑交易报告管理办法 · 第十四条</b>金融机构应当对通过交易监测标准筛选出的交易进行人工分析、识别，并记录分析过程；不作为可疑交易报告的，应当记录分析排除的合理理由。</div>
+          </div>
+          <div class="msg me">确认可疑之后多久必须报出去？</div>
+          <div class="msg bot">
+            按本机构内部规程确认为可疑交易后，<b style="font-weight:500">及时报送，最迟不超过 5 个工作日</b><span class="cite">[4]</span>；大额交易同样是发生之日起 5 个工作日内<span class="cite">[5]</span>；收到补正通知后 5 个工作日内补正<span class="cite">[6]</span>。<br>
+            名单类、涉恐类不适用这个时限，须立即报送。
+            <div class="src"><b>[4] 同办法 · 第十五条</b>金融机构应当在按本机构可疑交易报告内部操作规程确认为可疑交易后，及时以电子方式提交可疑交易报告，最迟不超过 5 个工作日。</div>
+            <div class="src"><b>[5] 同办法 · 第八条</b>金融机构应当在大额交易发生之日起 5 个工作日内以电子方式提交大额交易报告。</div>
+            <div class="src"><b>[6] 同办法 · 第二十八条</b>中国反洗钱监测分析中心发现要素不全或存在错误的，可发出补正通知，金融机构应当在接到补正通知之日起 5 个工作日内补正。</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <input placeholder="问制度、问口径、问时限…" style="flex:1;padding:9px 11px;border:.5px solid var(--line2);border-radius:7px">
+          <button class="btn primary">提问</button>
+        </div>
+        <p class="note">检索为关键词与向量混合召回；模型不可用时自动降级为只返回条文原文，并标注降级状态。</p>
+      </div>
+    </div>
+
+    <div id="p-audit" class="hide">
+      <div class="top">
+        <div><h2>评测与审计</h2><div class="path">模型 2026.11　·　规则库 v2.3.1　·　最近一次评测 11-14 11:05</div></div>
+        <div class="tools"><button class="btn primary">运行评测</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>检索命中率</span><b>92<em>%</em></b><i>10 条用例</i></div>
+        <div class="kpi"><span>引用一致率</span><b>88<em>%</em></b><i>答案与条文一致</i></div>
+        <div class="kpi"><span>建议采纳率</span><b>76<em>%</em></b><i>近 7 日人工反馈</i></div>
+        <div class="kpi"><span>排除误判率</span><b>4.2<em>%</em></b><i>抽查 240 条</i></div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>用例明细<small>10 条，展示 6 条</small></h3>
+          <table>
+            <thead><tr><th>用例</th><th>检索</th><th>引用</th><th>耗时</th></tr></thead>
+            <tbody>
+              <tr><td>夜间非柜面转账阈值</td><td><span class="tag t-low">命中</span></td><td><span class="tag t-low">一致</span></td><td class="mono">2.9s</td></tr>
+              <tr><td>可疑交易报告时限</td><td><span class="tag t-low">命中</span></td><td><span class="tag t-low">一致</span></td><td class="mono">3.1s</td></tr>
+              <tr><td>排除是否需要记录理由</td><td><span class="tag t-low">命中</span></td><td><span class="tag t-low">一致</span></td><td class="mono">3.3s</td></tr>
+              <tr><td>高风险客户审核频次</td><td><span class="tag t-low">命中</span></td><td><span class="tag t-mid">部分</span></td><td class="mono">3.6s</td></tr>
+              <tr><td>拆分交易识别特征</td><td><span class="tag t-low">命中</span></td><td><span class="tag t-low">一致</span></td><td class="mono">4.0s</td></tr>
+              <tr><td>名单命中后的处置动作</td><td><span class="tag t-mid">未命中</span></td><td><span class="tag t-mid">—</span></td><td class="mono">2.8s</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>失败归因</h3>
+          <div class="row"><span>语料未覆盖</span><span class="mono">3</span></div>
+          <div class="bar"><i style="width:60%"></i></div>
+          <div class="row"><span>切分切断条文</span><span class="mono">1</span></div>
+          <div class="bar"><i style="width:20%"></i></div>
+          <div class="row"><span>模型理解偏差</span><span class="mono">1</span></div>
+          <div class="bar"><i style="width:20%"></i></div>
+          <p class="note">指标连续两次持平或下降时，阻止提示词上线。</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Agent 操作留痕<small>可回放 · 保存 5 年</small></h3>
+        <table>
+          <thead><tr><th>时间</th><th>工单</th><th>动作</th><th>操作人 / 系统</th><th>模型版本</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">11-14 18:14</td><td class="mono">YJ-20261114-0001</td><td>起草分析过程</td><td>Agent</td><td>qwen2.5</td><td><span class="tag t-low">成功</span></td></tr>
+            <tr><td class="mono">11-14 18:26</td><td class="mono">YJ-20261114-0001</td><td>生成 STR 报告</td><td>雷犇</td><td>—</td><td><span class="tag t-blue">待复核</span></td></tr>
+            <tr><td class="mono">11-14 09:05</td><td class="mono">YJ-20261114-0001</td><td>领取工单</td><td>雷犇</td><td>—</td><td><span class="tag t-low">成功</span></td></tr>
+            <tr><td class="mono">11-13 23:41</td><td class="mono">YJ-20261114-0001</td><td>规则命中生成</td><td>系统</td><td>v2.3.1</td><td><span class="tag t-low">成功</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function enter(){
+  var r=document.getElementById('loginRole').value;
+  document.getElementById('login').classList.add('hide');
+  document.getElementById('app').classList.remove('hide');
+  document.getElementById('roleSel').value=r;
+  setRole(r);
+}
+function go(p){
+  ['dash','list','detail','customer','report','qa','audit'].forEach(function(k){
+    document.getElementById('p-'+k).classList.toggle('hide',k!==p);
+  });
+  document.querySelectorAll('.nav').forEach(function(n){n.classList.toggle('on',n.dataset.p===p);});
+  window.scrollTo(0,0);
+}
+function setRole(r){
+  var map={staff:'风控专员',lead:'风控主管',aml:'反洗钱岗',audit:'内审（只读）'};
+  document.getElementById('meRole').textContent=map[r];
+  var ids=['Staff','Lead','Aml','Audit'];
+  ids.forEach(function(k){
+    document.getElementById('act'+k).classList.toggle('hide',k.toLowerCase()!==r);
+  });
+  var b=document.getElementById('roleBanner');
+  if(r==='audit'){b.className='banner blue';b.textContent='当前为内审只读视图：可查看全部处置痕迹与模型输出，不能修改结论、不能报送。';}
+  else{b.className='banner';b.textContent='Agent 只起草「分析过程记录」与处置建议，不代你决策。提交后仍需你确认署名，操作全程留痕（第十四条、第二十二条）。';}
+}
+function submitDispose(){
+  var ok=confirm('确认认定为可疑交易？\n系统将生成 STR 报告并进入主管复核，责任人：雷犇。');
+  document.getElementById('msg').textContent=ok?'已于 18:26 提交，进入主管复核；STR 报告已生成，剩余时限 1 天 4 小时。':'';
+}
+function excludeTicket(){
+  var reason=prompt('排除理由为必填项（第十四条）：\n请写明核实方式与排除依据，例如「已电话核实，提供合同与发票，与经营范围相符」。');
+  if(reason===null)return;
+  if(reason.trim().length<10){
+    alert('理由不足 10 个字，无法归档。法规要求记录分析排除的合理理由，审计会抽查。');
+    return;
+  }
+  document.getElementById('msg').textContent='已排除归档，理由已留痕；该工单不计入可疑交易报告。';
+}
+</script>
+</body>
+</html>

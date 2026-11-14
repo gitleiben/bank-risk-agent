@@ -8,7 +8,7 @@
 
 ## 零、在 IDEA 里打开（最快路径）
 
-1. IDEA 菜单 `File → Open`，选目录 `/Users/cheying/IdeaProjects/bank-risk-agent`（选到 `pom.xml` 那一层）
+1. IDEA 菜单 `File → Open`，选本仓库根目录（选到 `pom.xml` 那一层）
 2. 弹「Trust Project」点 Trust，Maven 会自动 import（第一次要下依赖，约 1-2 分钟）
 3. `Project Structure → SDK` 选 IDEA 自带的 JDK（我验证用的是 JBR 25），或本地 21+
 4. 跑 `com.riskagent.RiskAgentApplication` 的 main 方法，浏览器开 `http://localhost:8080`
@@ -155,8 +155,8 @@ docs/                面试讲述.md  路线图.md
 ## 九、里程碑
 
 - **M1 跑通链路**（已完成）：切分 → 检索 → 生成 → 引用，降级可用，10 条用例评测。
-- **M2 换 Elasticsearch**：`VectorStore` 换成 `spring-ai-starter-vector-store-elasticsearch`，上层代码零改动；补 ES mapping、kNN 检索、Rerank。
-- **M3 MCP + 多 Agent 编排**：把这 4 个工具封装成 MCP Server（`spring-ai-starter-mcp-server`），让 Claude/Cursor 也能调用；用 Spring AI Alibaba Graph 做「意图识别 → 条款检索 → 案例类比 → 处置生成」的 DAG 编排，加入人工确认节点。
+- **M2 换 Elasticsearch**（已接通，待联调）：`spring-ai-starter-vector-store-elasticsearch` 已引入，`--spring.profiles.active=es` 切换，上层代码零改动；`docker-compose.yml` 备好 ES 8.15；还剩 ES mapping、中文分词器、kNN 参数、Rerank 待调。
+- **M3 MCP**（已完成）：4 个工具通过 `ToolCallbackProvider` 暴露为标准 MCP 工具，Claude Desktop / Cursor 可接同一份定义；**多 Agent 编排**（Spring AI Alibaba Graph 做 DAG + 人工确认节点）还没做。
 - **M4 评测与调优**：扩到 40 条用例，加入"换个说法问同一件事"的改写集，对比纯向量 / 纯关键词 / 混合三组数字，把参数调到有据可依。
 - **M5 工程化与开源**：Docker 镜像、K8s（MiniKube）部署、GitHub 开源、在线 Demo。
 
@@ -169,6 +169,11 @@ docs/                面试讲述.md  路线图.md
 - MCP 端点在本机沙箱环境里被代理拦截（`/mcp`、`/sse` 返回 401/502），暂用「装配测试断言 4 个工具已注册」代偿；
   自己终端里跑应该正常，M3 验收时用 Claude Desktop 实连一次截图留证。
 - `mvn package` 在部分沙箱环境会报 `Unable to rename ... .jar.original`，删掉 `target/*.original` 重跑即可（构建机权限问题，不是代码问题）。
-- MCP 端点在本机沙箱环境里被代理拦截（`/mcp`、`/sse` 返回 401/502），暂用「装配测试断言 4 个工具已注册」代偿；
-  自己终端里跑应该正常，M3 验收时用 Claude Desktop 实连一次截图留证。
-- `mvn package` 在部分沙箱环境会报 `Unable to rename ... .jar.original`，删掉 `target/*.original` 重跑即可（构建机权限问题，不是代码问题）。
+
+## 十一、免责声明与许可
+
+- 本项目是**个人技术预研 Demo**，不是任何金融机构的生产系统，未在真实业务环境上线。
+- `src/main/resources/kb/` 下的制度语料为**自行撰写的示例文本**，参照公开监管文件的表述口径（《金融机构大额交易和可疑交易报告管理办法》央行令〔2016〕第 3 号等），**不含任何金融机构内部文件**。
+- `docs/产品原型.html` 中的客户名称、账号、金额、交易明细**全部为虚构数据**，与任何真实主体无关。
+- 本项目不构成合规建议。真实反洗钱系统须以监管规定与机构内部规程为准。
+- 代码以 [MIT License](LICENSE) 开源，可自由参考与修改。

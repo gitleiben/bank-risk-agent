@@ -1,0 +1,16 @@
+# 里程碑 2：Elasticsearch 向量库
+# 启动：docker compose up -d elasticsearch  然后  --spring.profiles.active=es
+spring:
+  elasticsearch:
+    uris: http://localhost:9200
+  ai:
+    vectorstore:
+      type: elasticsearch
+      elasticsearch:
+        enabled: true
+        # 索引会自动创建；手动建索引时用下面的 mapping 说明（dims 必须与 embedding 模型一致）
+        index-name: risk-kb
+        initialize-schema: true
+        # bge-m3 输出 1024 维；换成别的 embedding 模型必须同步改这里
+        dimensions: 1024
+        similarity: cosine

@@ -19,6 +19,22 @@ spring:
     # 关掉 Spring AI 的默认重试（默认 10 次、间隔递增，模型没启动时一次问答要卡两分钟）
     retry:
       max-attempts: 1
+    vectorstore:
+      # 关键：ES 向量库自动配置的默认条件是 type=elasticsearch（matchIfMissing=true），
+      # 只要 classpath 上有 ES 依赖就会尝试连接 ES 导致启动失败。
+      # 这里显式声明用内存版；--spring.profiles.active=es 时改回 elasticsearch。
+      type: none
+      elasticsearch:
+        enabled: false
+    mcp:
+      server:
+        name: bank-risk-mcp
+        version: 0.1.0
+        type: SYNC
+        # 工具来源统一走 ToolCallbackProvider（复用 RiskToolbox 的 @Tool 方法），
+        # 关掉 1.1 新加的 @McpTool 注解扫描，避免"两套定义各写一遍"
+        annotation-scanner:
+          enabled: false
 
 risk-agent:
   # 切片长度：制度文档一句条款约 40-80 字，420 字能容纳"条件+要求+依据"完整上下文

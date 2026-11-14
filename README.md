@@ -91,7 +91,38 @@ ollama serve &             # 常驻
 4. **模型探针 + 优雅降级**。Spring AI 默认重试 10 次、间隔递增，Ollama 没启动时一次问答要卡两分钟。加了 700ms 探针（`ModelHealth`）并把重试关到 1 次，不可用就秒级降级。
 5. **强制结构化输出**。"给一句建议"在银行落不了地，必须能落表、能分派、能审计，所以 Agent 最后一步固定输出 `风险等级 / 结论 / 依据 / 处置动作 / 分派岗位 / 引用`，解析失败有两层兜底。
 
-## 六、目录结构
+## 六、MCP：同一批工具，跨客户端复用
+
+`RiskToolbox` 的 4 个 `@Tool` 方法通过 `ToolCallbackProvider` 同时暴露成标准 MCP 工具（`McpServerConfig`）。
+启动后本项目的 Agent、Claude Desktop、Cursor 调的是**同一份工具定义**，接真实风控接口时只改方法体，所有调用方同时生效。
+
+Claude Desktop 接入配置（`claude_desktop_config.json`）：
+
+```json
+{
+  "mcpServers": {
+    "bank-risk": {
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+> 注意：Spring AI 1.1 新增了 `@McpTool` 注解扫描，本项目把它关掉（`spring.ai.mcp.server.annotation-scanner.enabled=false`），
+> 统一走 `ToolCallbackProvider`，避免同一套工具要写两遍定义。
+
+## 七、切换到 Elasticsearch（里程碑 2 的开关）
+
+```bash
+docker compose up -d elasticsearch
+java -jar target/bank-risk-agent-0.1.0.jar --spring.profiles.active=es
+```
+
+上层检索代码零改动。**坑已经踩过了**：ES 向量库自动配置的默认条件是 `spring.ai.vectorstore.type=elasticsearch`（`matchIfMissing=true`），
+只要 classpath 上有 ES 依赖就会尝试连库、连不上直接启动失败；所以默认配置里显式写了 `spring.ai.vectorstore.type: none`，
+es profile 里再改回 `elasticsearch`。
+
+## 八、目录结构
 
 ```
 src/main/java/com/riskagent/
@@ -112,7 +143,7 @@ scripts/             dev.sh  pull-model.sh  eval.sh
 docs/                面试讲述.md  路线图.md
 ```
 
-## 七、里程碑
+## 九、里程碑
 
 - **M1 跑通链路**（已完成）：切分 → 检索 → 生成 → 引用，降级可用，10 条用例评测。
 - **M2 换 Elasticsearch**：`VectorStore` 换成 `spring-ai-starter-vector-store-elasticsearch`，上层代码零改动；补 ES mapping、kNN 检索、Rerank。
@@ -120,9 +151,15 @@ docs/                面试讲述.md  路线图.md
 - **M4 评测与调优**：扩到 40 条用例，加入"换个说法问同一件事"的改写集，对比纯向量 / 纯关键词 / 混合三组数字，把参数调到有据可依。
 - **M5 工程化与开源**：Docker 镜像、K8s（MiniKube）部署、GitHub 开源、在线 Demo。
 
-## 八、已知限制
+## 十、已知限制
 
 - 只有 5 篇示例语料、30 个切片，规模不足以暴露长文档检索的真实问题（多跳、跨文档冲突）。
 - 工具返回的是代码里的示例数据，未接真实风控系统接口（真实接入在 M3 做 MCP）。
 - 3B 模型在结构化输出上偶尔会漏字段，解析兜底能兜住但信息会缺失；这是换 7B/14B 最直接的理由。
 - 评测集自建、样本小，指标只能内部对比，不能对外宣称准确率。
+- MCP 端点在本机沙箱环境里被代理拦截（`/mcp`、`/sse` 返回 401/502），暂用「装配测试断言 4 个工具已注册」代偿；
+  自己终端里跑应该正常，M3 验收时用 Claude Desktop 实连一次截图留证。
+- `mvn package` 在部分沙箱环境会报 `Unable to rename ... .jar.original`，删掉 `target/*.original` 重跑即可（构建机权限问题，不是代码问题）。
+- MCP 端点在本机沙箱环境里被代理拦截（`/mcp`、`/sse` 返回 401/502），暂用「装配测试断言 4 个工具已注册」代偿；
+  自己终端里跑应该正常，M3 验收时用 Claude Desktop 实连一次截图留证。
+- `mvn package` 在部分沙箱环境会报 `Unable to rename ... .jar.original`，删掉 `target/*.original` 重跑即可（构建机权限问题，不是代码问题）。

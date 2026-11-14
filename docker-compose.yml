@@ -1,0 +1,37 @@
+# 里程碑 2 用：本地 Elasticsearch（岗位硬要求：ES 向量检索）
+# 启动：docker compose up -d
+# 关闭：docker compose down
+#
+# 说明：单节点、关闭安全认证，仅用于本机开发演示。
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: risk-agent-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q status"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.3
+    container_name: risk-agent-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    profiles: ["ui"]
+
+volumes:
+  es-data:

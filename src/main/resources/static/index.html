@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<title>银行运营监督与风险预警 Agent · 演示</title>
+<style>
+  :root{--bg:#0f1216;--panel:#171c23;--line:#252c36;--text:#e6ebf2;--sub:#8b98a9;--acc:#3d7eff;--ok:#2dbb6a;--warn:#e8a33d;--bad:#e5544b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+  header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+  header h1{font-size:16px;margin:0;font-weight:600}
+  .tag{font-size:11px;padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--sub)}
+  .wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 24px 40px;max-width:1320px;margin:0 auto}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card h2{font-size:14px;margin:0 0 4px;font-weight:600}
+  .card p.hint{color:var(--sub);font-size:12px;margin:0 0 12px}
+  textarea,input{width:100%;background:#0d1116;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px;font:13px/1.6 inherit;resize:vertical;outline:none}
+  textarea:focus,input:focus{border-color:var(--acc)}
+  button{margin-top:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--sub);margin-left:8px}
+  .out{margin-top:14px;white-space:pre-wrap;font-size:13px;border-top:1px dashed var(--line);padding-top:12px;min-height:24px}
+  .cites{list-style:none;padding:0;margin:12px 0 0;font-size:12px;color:var(--sub)}
+  .cites li{border-left:2px solid var(--acc);padding:4px 0 4px 8px;margin-bottom:6px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .lvl{padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
+  .lvl-high{background:rgba(229,84,75,.15);color:var(--bad)}
+  .lvl-mid{background:rgba(232,163,61,.15);color:var(--warn)}
+  .lvl-low{background:rgba(45,187,106,.15);color:var(--ok)}
+  .meta{display:flex;gap:16px;color:var(--sub);font-size:12px;padding:0 24px 8px;max-width:1320px;margin:0 auto}
+  code{background:#0d1116;padding:1px 5px;border-radius:4px;font-size:12px;color:#9fc4ff}
+</style>
+</head>
+<body>
+<header>
+  <h1>银行运营监督与风险预警 Agent</h1>
+  <span class="tag">本地模型 · 数据不出域</span>
+  <span class="tag" id="stat">加载中…</span>
+</header>
+<div class="meta">
+  <span>调试接口：<code>POST /api/qa</code> <code>POST /api/alert/dispose</code> <code>GET /api/eval/run</code></span>
+</div>
+
+<div class="wrap">
+  <section class="card">
+    <h2>① 制度问答（RAG）</h2>
+    <p class="hint">只依据知识库回答，每条结论带引用编号，避免金融场景编造条款。</p>
+    <textarea id="q" rows="3">夜间非柜面转账多少笔会触发预警？处置动作是什么？</textarea>
+    <button id="ask">提问</button>
+    <button class="ghost" id="reindex">重建索引</button>
+    <div class="out" id="qaOut"></div>
+    <ul class="cites" id="qaCites"></ul>
+  </section>
+
+  <section class="card">
+    <h2>② 预警工单处置（Agent + 工具调用）</h2>
+    <p class="hint">模型自主调用规则查询 / 案例回溯 / 账户画像工具，输出结构化处置建议。</p>
+    <div class="row">
+      <input id="ticketNo" value="YJ-20261114-0001" placeholder="工单号"/>
+      <input id="alertType" value="大额可疑交易" placeholder="预警类型"/>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="accountNo" value="6222020200112233" placeholder="账号"/>
+      <input id="amount" value="3200000" placeholder="金额"/>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="channel" value="手机银行" placeholder="渠道"/>
+      <input id="occurredAt" value="2026-11-13 23:40" placeholder="发生时间"/>
+    </div>
+    <textarea id="desc" rows="2" style="margin-top:8px">某商贸公司账户3日内分散转入46笔合计320万元，2笔集中转出，多笔金额4.8万-4.9万，夜间交易占比62%。</textarea>
+    <button id="dispose">生成处置建议</button>
+    <div class="out" id="dpOut"></div>
+    <ul class="cites" id="dpCites"></ul>
+  </section>
+
+  <section class="card">
+    <h2>③ 评测（检索 / 答案准确率）</h2>
+    <p class="hint">10 条人工标注用例。先测检索（秒级），连模型测约 1-2 分钟。</p>
+    <button id="evalRetrieval">只测检索</button>
+    <button class="ghost" id="evalAll">连模型一起测</button>
+    <div class="out" id="evalOut"></div>
+  </section>
+
+  <section class="card">
+    <h2>④ 说明</h2>
+    <p class="hint">本页面为个人 AI 预研项目的演示界面，语料为自建示例，非银行生产系统。</p>
+    <div class="out" style="color:var(--sub);white-space:normal">
+      技术栈：Spring Boot 3.5 + Spring AI 1.1（ChatClient / Tool Calling）+ Spring AI Alibaba Graph + Ollama(qwen2.5) + 混合检索（关键词 + 向量）。<br/>
+      降级策略：本地模型未启动时，问答自动返回命中原文并标注 <code>RETRIEVAL_ONLY</code>，工单处置返回“待人工判定”，不会假装结论。
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => (s ?? '').toString();
+
+fetch('/api/stats').then(r => r.json()).then(d => {
+  $('stat').textContent = `模型 ${d.model} · 切片 ${d.chunks} · 向量 ${d.vectorReady ? '已就绪' : '未就绪'}`;
+}).catch(() => $('stat').textContent = '服务未就绪');
+
+let busy = false;
+function lock(v){ busy = v; document.querySelectorAll('button').forEach(b => b.disabled = v); }
+
+$('ask').onclick = async () => {
+  const question = $('q').value.trim(); if (!question || busy) return;
+  lock(true); $('qaOut').textContent = '检索并生成中…'; $('qaCites').innerHTML = '';
+  try {
+    const r = await fetch('/api/qa', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question})});
+    const d = await r.json();
+    $('qaOut').textContent = d.answer + (d.mode !== 'LLM' ? `\n\n[模式] ${d.mode}` : '');
+    $('qaCites').innerHTML = (d.citations || []).map(c =>
+      `<li>[${c.index}] ${esc(c.source)} · ${esc(c.section)} <span style="color:#5a6675">score ${c.score}</span><br/>${esc(c.snippet)}</li>`).join('');
+  } catch (e) { $('qaOut').textContent = '请求失败：' + e; }
+  lock(false);
+};
+
+$('reindex').onclick = async () => {
+  lock(true); $('qaOut').textContent = '重建中（向量化需要本地 embedding 模型）…';
+  try { const d = await (await fetch('/api/kb/reindex', {method:'POST'})).json();
+    $('qaOut').textContent = `切片 ${d.chunks} 条，向量写入 ${d.vectors} 条，向量库 ${d.vectorReady ? '就绪' : '未就绪（回退关键词检索）'}`;
+  } catch (e) { $('qaOut').textContent = '失败：' + e; }
+  lock(false);
+};
+
+$('dispose').onclick = async () => {
+  if (busy) return; lock(true); $('dpOut').textContent = 'Agent 推理中（会调用工具查证）…'; $('dpCites').innerHTML = '';
+  const body = {ticketNo:$('ticketNo').value, alertType:$('alertType').value, accountNo:$('accountNo').value,
+    customerName:'某某商贸有限公司', amount:$('amount').value, occurredAt:$('occurredAt').value,
+    channel:$('channel').value, description:$('desc').value};
+  try {
+    const d = await (await fetch('/api/alert/dispose', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)})).json();
+    const cls = d.riskLevel && d.riskLevel.includes('高') ? 'lvl-high' : d.riskLevel && d.riskLevel.includes('中') ? 'lvl-mid' : 'lvl-low';
+    $('dpOut').innerHTML = `<div><span class="lvl ${cls}">${esc(d.riskLevel)}</span> 分派：${esc(d.assignTo)}</div>
+      <div style="margin-top:8px">${esc(d.conclusion)}</div>
+      <div style="margin-top:8px;color:#8b98a9">依据：${esc(d.basis)}</div>
+      <div style="margin-top:8px">动作：<br/>${(d.actions||[]).map((a,i)=>`${i+1}. ${esc(a)}`).join('<br/>')}</div>`;
+    $('dpCites').innerHTML = (d.citations || []).map(c =>
+      `<li>[${c.index}] ${esc(c.source)} · ${esc(c.section)} <span style="color:#5a6675">score ${c.score}</span></li>`).join('');
+  } catch (e) { $('dpOut').textContent = '请求失败：' + e; }
+  lock(false);
+};
+
+async function runEval(withLlm) {
+  lock(true); $('evalOut').textContent = withLlm ? '正在连模型评测，约 1-2 分钟…' : '评测中…';
+  try {
+    const d = await (await fetch('/api/eval/run?withLlm=' + withLlm)).json();
+    const lines = [`用例 ${d.total} 条`, `检索命中率 ${(d.retrievalAccuracy*100).toFixed(1)}%`];
+    if (withLlm) lines.push(`答案命中率 ${(d.answerAccuracy*100).toFixed(1)}%`);
+    lines.push('');
+    (d.cases||[]).forEach((c,i) => lines.push(`${c.retrievedHit ? '✓' : '✗'} ${i+1}. ${c.question}${c.answerHit===null?'':(c.answerHit?'  [答案✓]':'  [答案✗]')}`));
+    $('evalOut').textContent = lines.join('\n');
+  } catch (e) { $('evalOut').textContent = '评测失败：' + e; }
+  lock(false);
+}
+$('evalRetrieval').onclick = () => runEval(false);
+$('evalAll').onclick = () => runEval(true);
+</script>
+</body>
+</html>

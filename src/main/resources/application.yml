@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bank-risk-agent
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      # 本机跑：3b 快、占内存小；换 7b/14b 直接改这里，代码不用动
+      chat:
+        options:
+          model: qwen2.5:3b
+          temperature: 0.2
+          num-ctx: 4096
+      embedding:
+        options:
+          model: bge-m3
+    # 关掉 Spring AI 的默认重试（默认 10 次、间隔递增，模型没启动时一次问答要卡两分钟）
+    retry:
+      max-attempts: 1
+
+risk-agent:
+  # 切片长度：制度文档一句条款约 40-80 字，420 字能容纳"条件+要求+依据"完整上下文
+  chunk-size: 420
+  chunk-overlap: 80
+  top-k: 4
+  min-score: 0.02
+  # 首次启动若 embedding 模型已 pull，可设为 true 自动向量化
+  ingest-on-start: false
+  kb-location: classpath:kb/*.md
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.riskagent: INFO
+    org.springframework.ai: WARN

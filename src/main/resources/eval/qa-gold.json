@@ -1,0 +1,52 @@
+[
+  {
+    "question": "大额交易报告的金额标准是多少？",
+    "expectKeywords": ["5 万元", "200 万元", "50 万元"],
+    "expectSource": "01-大额交易和可疑交易报告制度.md"
+  },
+  {
+    "question": "发现可疑交易后多久要启动核查？",
+    "expectKeywords": ["T+1", "5 个工作日"],
+    "expectSource": "01-大额交易和可疑交易报告制度.md"
+  },
+  {
+    "question": "命中涉恐名单需要多久上报？",
+    "expectKeywords": ["当日"],
+    "expectSource": "01-大额交易和可疑交易报告制度.md"
+  },
+  {
+    "question": "同一客户30天内开几个账户算异常开户？",
+    "expectKeywords": ["3 个", "30 日"],
+    "expectSource": "02-账户异常开销户处置细则.md"
+  },
+  {
+    "question": "异常开销户预警要在几个工作日内核查完？",
+    "expectKeywords": ["2 个工作日"],
+    "expectSource": "02-账户异常开销户处置细则.md"
+  },
+  {
+    "question": "夜间非柜面转账多少笔会触发预警？",
+    "expectKeywords": ["5 笔", "22:00", "20 万元"],
+    "expectSource": "03-非柜面渠道异常交易监测规则.md"
+  },
+  {
+    "question": "拆分交易规避的预警特征是什么？",
+    "expectKeywords": ["4.5 万", "10 笔"],
+    "expectSource": "03-非柜面渠道异常交易监测规则.md"
+  },
+  {
+    "question": "高风险工单的处置时限和分派岗位是什么？",
+    "expectKeywords": ["24 小时", "反洗钱岗"],
+    "expectSource": "04-预警工单分级与分派流程.md"
+  },
+  {
+    "question": "工单结案说明必须包含哪些内容？",
+    "expectKeywords": ["结论", "依据", "处置动作"],
+    "expectSource": "04-预警工单分级与分派流程.md"
+  },
+  {
+    "question": "有没有小额多笔、金额贴线夜间集中交易的案例？",
+    "expectKeywords": ["4.8 万", "夜间", "过渡账户"],
+    "expectSource": "05-可疑交易典型案例库.md"
+  }
+]

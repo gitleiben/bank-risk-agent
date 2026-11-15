@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  *   <li>后续接真实风控接口时，只需要改 Toolbox 里一个方法体，所有调用方同时生效。</li>
  * </ul>
  *
- * <p>面试可以直接讲这段：MCP 解决的不是"能不能调工具"，而是"工具定义能不能跨客户端复用"。</p>
+ * <p>这里的关键点：MCP 解决的不是"能不能调工具"，而是"工具定义能不能跨客户端复用"。</p>
  */
 @Configuration
 public class McpServerConfig {

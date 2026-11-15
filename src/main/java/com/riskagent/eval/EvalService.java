@@ -84,13 +84,18 @@ public class EvalService {
                 Math.round(answer * 1000) / 1000.0, results);
     }
 
-    /** 期望关键词在文本中的覆盖率，0~1。 */
+    /** 期望关键词在文本中的覆盖率，0~1。比对前统一去掉空格与全角空格，"5万元" 与 "5 万元" 视为同一写法。 */
     private static double coverage(List<String> keywords, String text) {
         if (keywords == null || keywords.isEmpty()) {
             return 1.0;
         }
-        long hit = keywords.stream().filter(text::contains).count();
+        String normalized = normalize(text);
+        long hit = keywords.stream().filter(k -> normalized.contains(normalize(k))).count();
         return (double) hit / keywords.size();
+    }
+
+    private static String normalize(String s) {
+        return s == null ? "" : s.replaceAll("[\\s\\u00A0\\u3000]", "");
     }
 
     private List<EvalCase> loadCases() {

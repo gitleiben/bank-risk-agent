@@ -10,7 +10,10 @@
 
 1. IDEA 菜单 `File → Open`，选本仓库根目录（选到 `pom.xml` 那一层）
 2. 弹「Trust Project」点 Trust，Maven 会自动 import（第一次要下依赖，约 1-2 分钟）
-3. `Project Structure → SDK` 选 IDEA 自带的 JDK（我验证用的是 JBR 25），或本地 21+
+3. `Project Structure` 配 JDK：**pom 里 `java.version=21`，必须 JDK 21+**
+   - 平台设置 → SDK：`+` → JDK → 选本机 21（IDEA 会自动列出已安装的 JDK）
+   - **项目设置 → 项目 → SDK** 也要改成 21（`语言级别` 选 21）
+   - ⚠️ 只把 JDK 加进"平台设置 → SDK"是不够的：项目实际用的是"项目设置 → 项目"里的那个 SDK，模块默认继承项目 SDK。没改这一处就会报 `无法编译为 JVM 目标 21 配置的模块：指定的回退 SDK 版本 8 不支持`
 4. 跑 `com.riskagent.RiskAgentApplication` 的 main 方法，浏览器开 `http://localhost:8080`
 
 > 注意：从 IDEA 里直接 run 是 8080；用命令行 `./scripts/dev.sh` 也是 8080。
@@ -53,17 +56,29 @@
 
 ### 0. 环境说明
 
-本机没有独立安装 JDK17+ / Maven，项目脚本**直接复用 IntelliJ IDEA 自带的 JDK25（JBR）和 Maven 3.9**，省掉 200MB 下载。装了正式 JDK21 后改 `JAVA_HOME` 即可。
+- **JDK 21+**（pom 要求 21）、**Maven 3.9+**。用 IDEA 的话，直接复用 IDEA 自带的 Maven 即可，不用额外装。
+- **Ollama**（本地推理）+ 两个模型：`qwen2.5:3b`（对话，≈2.0GB）、`bge-m3`（向量，≈1.1GB）。
+- 本机实测环境：macOS 13.7.8 / Apple M1 / 16G 内存，CPU 推理约 **19 tok/s**（够演示与评测，不适合压测）。
 
 ### 1. 装 Ollama 并拉模型（只有这一步需要联网）
 
 ```bash
-brew install ollama        # 或 https://ollama.com/download
+# 方式一：官方安装包（macOS 14+ / Windows / Linux）
+#   https://ollama.com/download
+
+# 方式二：macOS 13 及以下（官方 0.12.10 起二进制最低要求 macOS 14，装了会 dyld 报错）
+#   0.12.9 是最后一个支持 macOS 13 的版本，解压即用：
+#   tar -xzf ollama-darwin.tgz -C ~/.local/ollama && ln -s ~/.local/ollama/ollama ~/.local/bin/ollama
+
 ollama serve &             # 常驻
-./scripts/pull-model.sh    # 默认拉 qwen2.5:3b（≈1.9GB）+ bge-m3（≈1.2GB）
+./scripts/pull-model.sh    # 默认拉 qwen2.5:3b + bge-m3
 ```
 
 想效果好一档：`./scripts/pull-model.sh qwen2.5:7b bge-m3`（≈4.7GB，16G 内存推荐）。
+
+> **两个实测坑**（详见第十二节）：
+> 1. 用 GGUF 文件自己 `ollama create` 导入的模型**默认没有 tools 能力**，Agent 会报 `does not support tools` —— 必须把官方模板（含工具分支）写进 Modelfile。
+> 2. macOS 13 + Ollama 0.12.9 走 Metal 会崩（`GGML_ASSERT(buf_dst) failed`），要在 Modelfile 里加 `PARAMETER num_gpu 0` 强制 CPU。
 
 ### 2. 启动
 
@@ -82,15 +97,21 @@ ollama serve &             # 常驻
 
 ## 四、当前已验证的状态（可复现）
 
+本机真实跑出来的数字（macOS 13 / M1 / 16G，`qwen2.5:3b` CPU 推理）：
+
 | 项目 | 结果 | 怎么验 |
 |---|---|---|
-| 编译 | BUILD SUCCESS（JDK25 + Spring Boot 3.5.10 + Spring AI 1.1.2） | `mvn -DskipTests package` |
-| 启动 | 1.5 秒内启动，装载 5 篇语料 / 30 个切片 | 看启动日志 |
-| 关键词检索 | 10 条自建用例检索命中 10/10 | `curl "localhost:8080/api/eval/run?withLlm=false"` |
-| 模型未装时降级 | 问答/处置均秒级返回降级结果，不卡死 | 上面同一条接口 |
-| 大模型生成 | **未验证**（本机未装 Ollama，未拉模型） | 装完模型后 `?withLlm=true` |
+| 编译启动 | BUILD SUCCESS，约 1.5 秒启动，装载 5 篇语料 / 30 个切片 | 看启动日志 |
+| 关键词检索 | 自建 10 条用例 **10/10 命中** | `GET /api/eval/run?withLlm=false` |
+| 大模型生成 | **链路已验证**，CPU 推理 19.3 tok/s | `POST /api/qa` |
+| 答案命中率 | **8/10**（同一套题库，优化前 4~5/10） | `GET /api/eval/run?withLlm=true`（约 80 秒） |
+| 制度问答 | 例：问"可疑交易报告最迟几个工作日内提交" → 答"5 个工作日内提交 [1]"，带条款引用 | 演示页左栏 |
+| 工单处置 Agent | 输出 `风险等级 / 结论 / 依据 / 处置动作 / 分派岗位`，模型真实发起工具调用 | 演示页右栏 / `POST /api/alert/dispose` |
+| 模型不可用时降级 | 秒级返回命中的制度原文并标 `RETRIEVAL_ONLY`，不卡死、不编造 | 停掉 ollama 再问 |
 
-⚠️ 诚实提示：10/10 是在**自建语料 + 题库高度对应**的情况下用关键词检索拿到的，只能证明链路的召回通，**不能当成效果指标**。真实可信的数字要等接入 ES 向量检索 + 跨表述改写测试后再补。
+优化前后的提升来自两件事：① 知识库条款补明时限口径；② 提示词加"禁止时限加减推算""禁止在资料相关时回答未检索到"两条硬约束（详见第十二节）。
+
+⚠️ 诚实提示：10/10 是在**自建语料 + 题库高度对应**的情况下拿到的，只能证明召回链路通，**不能当成效果指标**；8/10 里有 2 条是 3B 模型的随机失败（换个问法就答对），真实可信的数字要等扩到 40 条 + 改写测试后再补。
 
 ## 五、五个关键技术决策（面试重点）
 
@@ -154,10 +175,10 @@ docs/                面试讲述.md  路线图.md
 
 ## 九、里程碑
 
-- **M1 跑通链路**（已完成）：切分 → 检索 → 生成 → 引用，降级可用，10 条用例评测。
+- **M1 跑通链路**（已完成）：切分 → 检索 → 生成 → 引用，降级可用，本地模型真实跑通（答案命中 8/10）。
 - **M2 换 Elasticsearch**（已接通，待联调）：`spring-ai-starter-vector-store-elasticsearch` 已引入，`--spring.profiles.active=es` 切换，上层代码零改动；`docker-compose.yml` 备好 ES 8.15；还剩 ES mapping、中文分词器、kNN 参数、Rerank 待调。
 - **M3 MCP**（已完成）：4 个工具通过 `ToolCallbackProvider` 暴露为标准 MCP 工具，Claude Desktop / Cursor 可接同一份定义；**多 Agent 编排**（Spring AI Alibaba Graph 做 DAG + 人工确认节点）还没做。
-- **M4 评测与调优**：扩到 40 条用例，加入"换个说法问同一件事"的改写集，对比纯向量 / 纯关键词 / 混合三组数字，把参数调到有据可依。
+- **M4 评测与调优**（进行中）：已从 10 条扩到计划 40 条，加入"换个说法问同一件事"的改写集，对比纯向量 / 纯关键词 / 混合三组数字；下一步换 `qwen2.5:7b` 做同题库对比，把"为什么 3B 不够用"量化出来。
 - **M5 工程化与开源**：Docker 镜像、K8s（MiniKube）部署、GitHub 开源、在线 Demo。
 
 ## 十、已知限制
@@ -170,7 +191,40 @@ docs/                面试讲述.md  路线图.md
   自己终端里跑应该正常，M3 验收时用 Claude Desktop 实连一次截图留证。
 - `mvn package` 在部分沙箱环境会报 `Unable to rename ... .jar.original`，删掉 `target/*.original` 重跑即可（构建机权限问题，不是代码问题）。
 
-## 十一、免责声明与许可
+## 十一、工程踩坑笔记（面试可讲的部分）
+
+这些都是本地真实跑出来的坑，不是搜来的结论。面试问"你在落地中遇到过什么困难"，按这条线讲比讲架构有效得多。
+
+**1. 本地模型怎么选版本：先看二进制的最低系统版本**
+官方 Ollama 从 0.12.10 起把 `-mmacosx-version-min` 提到 14.0，macOS 13 上 dyld 直接拒载；`brew install ollama` 也不行（依赖 mlx，同样要求 14）。
+判定方法：读对应 tag 的 `scripts/build_darwin.sh`，二分定位到 **v0.12.9 是最后一个支持 macOS 13 的版本**。
+
+**2. Metal 在旧系统上会崩，要显式关掉 GPU**
+0.12.9 + macOS 13 走 Metal 推理会 `GGML_ASSERT(buf_dst) failed`，`/api/chat` 直接 500。
+解决：Modelfile 写 `PARAMETER num_gpu 0` 强制 CPU，3B Q4_K_M 实测 19.3 tok/s，演示/评测够用。
+
+**3. 自己导入的 GGUF 模型默认没有 tools 能力**
+用 `ollama create` 从 GGUF 导入的模型，`Capabilities` 里只有 completion，Agent 一调用工具就 `400 does not support tools`。
+根因是模板里没有工具分支。解决：把模型官方模板（含 `.Tools` 分支）写进 Modelfile 的 `TEMPLATE`，重建后 Capabilities 才出现 `tools`。
+
+**4. 3B 模型在"多片段上下文"里会误判相关性**
+现象很迷惑：问"可疑交易报告最迟几个工作日内提交"，引用里明明写着"5 个工作日"，模型却回"未检索到该规定"。
+定位方法（三组对照）：直连模型 + 单片段 → 答对；直连模型 + 4 片段 → 复现拒答；换提示词 → 答对。
+结论：小模型在多个条目混在一起时拿不准哪段相关，直接走兜底话术。
+解决：提示词加红线——"资料中存在同主题条款时，禁止回答未检索到，宁可答不完整"。回归测试后 8/10。
+这件事也顺便给出了"为什么需要 7B/14B"的实证依据，比空谈参数更有说服力。
+
+**5. Spring AI 的默认重试会把一次问答拖成两分钟**
+Ollama 没启动时，Spring AI 默认重试 10 次、间隔递增。加 700ms 探针（`ModelHealth`）+ 把 `max-attempts` 关到 1，不可用就秒级降级。
+
+**6. ES 向量库自动配置的"抢注"问题**
+`spring.ai.vectorstore.type=elasticsearch` 的判定条件是 `matchIfMissing=true`，只要 classpath 上有 ES 依赖、又没显式声明 type，它就会去连库，连不上直接启动失败。
+解决：默认配置显式写 `spring.ai.vectorstore.type: none`，es profile 里再切回 `elasticsearch`。
+
+**7. 改提示词必须重启应用**
+`RagService` 在构造器里把提示词读进成员变量（避免每次请求读文件），所以改 `prompts/*.md` 后不重启，模型用的还是旧提示词——这个坑本地调试时踩过一次。
+
+## 十二、免责声明与许可
 
 - 本项目是**个人技术预研 Demo**，不是任何金融机构的生产系统，未在真实业务环境上线。
 - `src/main/resources/kb/` 下的制度语料为**自行撰写的示例文本**，参照公开监管文件的表述口径（《金融机构大额交易和可疑交易报告管理办法》央行令〔2016〕第 3 号等），**不含任何金融机构内部文件**。

@@ -33,7 +33,9 @@
 
 ## 二、架构
 
-![架构图](docs/images/architecture.svg)
+![架构图](docs/images/architecture.png)
+
+> 架构矢量源文件见 [docs/images/architecture.svg](docs/images/architecture.svg)
 
 要点：
 

@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 720" width="1240" height="720" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .bx { fill:#ffffff; stroke:#e2e8f0; stroke-width:1.5; }
+      .t  { fill:#0f172a; font-size:14px; font-weight:600; }
+      .s  { fill:#64748b; font-size:11.5px; }
+      .xs { fill:#94a3b8; font-size:10.5px; }
+      .ln { stroke:#94a3b8; stroke-width:1.5; fill:none; marker-end:url(#ar); }
+      .ln2 { stroke:#cbd5e1; stroke-width:1.5; fill:none; stroke-dasharray:5 4; }
+      .lb { fill:#94a3b8; font-size:10.5px; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="720" fill="#ffffff"/>
+
+  <!-- ===== 接入层 ===== -->
+  <rect class="bx" x="110" y="56" width="230" height="52" rx="10"/>
+  <rect x="110" y="56" width="4" height="52" rx="2" fill="#3b82f6"/>
+  <text class="t" x="126" y="79">浏览器 · 内置演示页</text>
+  <text class="s" x="126" y="96">localhost:8080 / 制度问答 / 工单处置</text>
+
+  <rect class="bx" x="360" y="56" width="230" height="52" rx="10"/>
+  <rect x="360" y="56" width="4" height="52" rx="2" fill="#3b82f6"/>
+  <text class="t" x="376" y="79">REST 调用方</text>
+  <text class="s" x="376" y="96">curl / 脚本 / 前端页面</text>
+
+  <rect class="bx" x="1010" y="56" width="200" height="52" rx="10"/>
+  <rect x="1010" y="56" width="4" height="52" rx="2" fill="#f59e0b"/>
+  <text class="t" x="1026" y="79">MCP 客户端</text>
+  <text class="s" x="1026" y="96">Claude Desktop · Cursor</text>
+
+  <!-- ===== 接口层 ===== -->
+  <rect class="bx" x="110" y="140" width="880" height="56" rx="10"/>
+  <rect x="110" y="140" width="4" height="56" rx="2" fill="#6366f1"/>
+  <text class="t" x="128" y="164">AgentController · Spring MVC</text>
+  <text class="s" x="128" y="182">/api/qa　/api/alert/dispose　/api/eval/run　/api/kb/reindex　/api/stats</text>
+
+  <!-- ===== 业务层 ===== -->
+  <rect class="bx" x="110" y="224" width="490" height="88" rx="10"/>
+  <rect x="110" y="224" width="4" height="88" rx="2" fill="#8b5cf6"/>
+  <text class="t" x="128" y="250">RagService · 制度问答</text>
+  <text class="s" x="128" y="270">混合检索 Top4 → 拼上下文（带 [1][2] 标号）</text>
+  <text class="s" x="128" y="288">→ 系统提示词约束生成 → 回填引用，查不到就说查不到</text>
+
+  <rect class="bx" x="620" y="224" width="370" height="88" rx="10"/>
+  <rect x="620" y="224" width="4" height="88" rx="2" fill="#8b5cf6"/>
+  <text class="t" x="638" y="250">DispositionAgent · 工单处置</text>
+  <text class="s" x="638" y="270">取证据 → 自主决定调用哪些工具</text>
+  <text class="s" x="638" y="288">→ 输出风险等级 / 依据条款 / 处置动作 / 分派岗位</text>
+
+  <!-- ===== MCP Server（跨两行）===== -->
+  <rect class="bx" x="1010" y="224" width="200" height="246" rx="10"/>
+  <rect x="1010" y="224" width="4" height="246" rx="2" fill="#f59e0b"/>
+  <text class="t" x="1028" y="250">MCP Server</text>
+  <text class="s" x="1028" y="274">同一份工具定义</text>
+  <text class="s" x="1028" y="290">经 ToolCallback-</text>
+  <text class="s" x="1028" y="306">Provider 暴露为</text>
+  <text class="s" x="1028" y="322">标准 MCP 工具</text>
+  <text class="xs" x="1028" y="352">业务系统与外部</text>
+  <text class="xs" x="1028" y="368">Agent 客户端复用</text>
+  <text class="xs" x="1028" y="384">同一套工具，不重写</text>
+
+  <!-- ===== 能力层：检索 ===== -->
+  <rect x="110" y="344" width="490" height="126" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
+  <text class="t" x="128" y="368" fill="#0369a1">KnowledgeBaseService · 混合检索</text>
+  <text class="xs" x="128" y="384">关键词得分 + 向量得分加权融合，避免单路召回漏招</text>
+  <rect class="bx" x="126" y="396" width="210" height="54" rx="8"/>
+  <text class="t" x="140" y="418" font-size="12.5">KeywordIndex</text>
+  <text class="xs" x="140" y="436">bigram 切分 + idf 加权</text>
+  <text class="xs" x="140" y="450">无需模型，永远可用</text>
+  <rect class="bx" x="352" y="396" width="234" height="54" rx="8"/>
+  <text class="t" x="366" y="418" font-size="12.5">VectorStore</text>
+  <text class="xs" x="366" y="436">内存索引 / Elasticsearch（profile 切换）</text>
+  <text class="xs" x="366" y="450">上层代码零改动</text>
+
+  <!-- ===== 能力层：工具 ===== -->
+  <rect x="620" y="344" width="370" height="126" rx="10" fill="#f0fdfa" stroke="#99f6e4" stroke-width="1.5"/>
+  <text class="t" x="638" y="368" fill="#0f766e">RiskToolbox · 4 个 @Tool</text>
+  <text class="xs" x="638" y="384">Spring AI Tool Calling 自动生成参数 schema</text>
+  <rect class="bx" x="636" y="392" width="165" height="44" rx="8"/>
+  <text class="s" x="650" y="411" fill="#0f172a">ruleLookup</text>
+  <text class="xs" x="650" y="427">条款检索</text>
+  <rect class="bx" x="813" y="392" width="165" height="44" rx="8"/>
+  <text class="s" x="827" y="411" fill="#0f172a">caseRecall</text>
+  <text class="xs" x="827" y="427">同类案例召回</text>
+  <rect class="bx" x="636" y="444" width="165" height="44" rx="8"/>
+  <text class="s" x="650" y="463" fill="#0f172a">accountProfile</text>
+  <text class="xs" x="650" y="479">账户画像</text>
+  <rect class="bx" x="813" y="444" width="165" height="44" rx="8"/>
+  <text class="s" x="827" y="463" fill="#0f172a">dispatchSuggest</text>
+  <text class="xs" x="827" y="479">分派建议</text>
+
+  <!-- ===== 数据层 ===== -->
+  <rect class="bx" x="110" y="502" width="490" height="54" rx="10"/>
+  <rect x="110" y="502" width="4" height="54" rx="2" fill="#64748b"/>
+  <text class="t" x="128" y="525" font-size="13">知识库语料：5 篇制度文档 → 30 个切片</text>
+  <text class="s" x="128" y="543">按条款标题分段，420 字 / 重叠 80 字，带“文件名 · 章节”元数据</text>
+
+  <rect class="bx" x="620" y="502" width="370" height="54" rx="10"/>
+  <rect x="620" y="502" width="4" height="54" rx="2" fill="#e11d48"/>
+  <text class="t" x="638" y="525" font-size="13">降级模式 RETRIEVAL_ONLY</text>
+  <text class="s" x="638" y="543">模型不可用时返回条款原文 + 明确提示，不静默失败</text>
+
+  <!-- ===== 模型层 ===== -->
+  <rect x="110" y="592" width="1100" height="96" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+  <text class="t" x="128" y="618" fill="#b45309">本地推理层 · Ollama 0.12.9（127.0.0.1:11434）</text>
+  <text class="xs" x="128" y="634">语料与工单不出本机；M1 上 num_gpu=0 走 CPU，3B 实测 19 tok/s</text>
+  <rect class="bx" x="128" y="644" width="215" height="34" rx="8"/>
+  <text class="s" x="142" y="666">qwen2.5:3b　文本生成</text>
+  <rect class="bx" x="355" y="644" width="215" height="34" rx="8"/>
+  <text class="s" x="369" y="666">bge-m3　1024 维向量</text>
+  <text class="xs" x="600" y="666">换模型只改 application.yml 的 model 名，代码不动</text>
+
+  <!-- ===== 连线 ===== -->
+  <path class="ln" d="M 225 108 L 225 138"/>
+  <path class="ln" d="M 475 108 L 475 138"/>
+  <path class="ln" d="M 1110 108 L 1110 222"/>
+  <path class="ln" d="M 300 196 L 300 222"/>
+  <path class="ln" d="M 805 196 L 805 222"/>
+  <path class="ln" d="M 300 312 L 300 342"/>
+  <path class="ln" d="M 805 312 L 805 342"/>
+  <path class="ln" d="M 990 415 L 1008 415"/>
+  <path class="ln" d="M 300 470 L 300 500"/>
+
+  <!-- 模型调用走廊 -->
+  <path class="ln2" d="M 600 268 L 620 268"/>
+  <path class="ln" d="M 610 268 L 610 590"/>
+  <path class="ln2" d="M 600 430 L 610 430"/>
+
+  <text class="lb" x="392" y="128">HTTP / JSON</text>
+  <text class="lb" x="620" y="206">调用</text>
+  <text class="lb" x="316" y="494">加载 + 切分</text>
+  <text class="lb" x="318" y="333">检索</text>
+  <text class="lb" x="822" y="333">Tool Calling</text>
+  <text class="lb" x="616" y="574">chat / embedding</text>
+  <text class="lb" x="1122" y="170">tools/list · tools/call</text>
+</svg>

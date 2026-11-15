@@ -4,6 +4,10 @@
 
 **定位说明（先说清楚，避免误读）**：这是**个人 AI 预研项目**，语料是我自己按公开监管文件口径改写的示例语料，不涉及任何银行内部文件，也不是某家银行的生产系统。技术选型和场景设计来自我做过的银行风控项目积累的业务理解。
 
+![运行效果：制度问答（带条款引用）/ 预警工单处置（Agent + 工具调用）/ 检索评测](docs/images/ui.png)
+
+> 上图为本地真实运行截图：左侧制度问答返回条款原文并标注引用来源；右侧预警工单由 Agent 自主调用「规则检索 / 案例召回 / 账户画像」工具后输出结构化处置建议；下方为本项目自建的 10 条检索评测。
+
 ---
 
 ## 零、在 IDEA 里打开（最快路径）
@@ -29,6 +33,18 @@
 
 ## 二、架构
 
+![架构图](docs/images/architecture.svg)
+
+要点：
+
+- **两条业务链路**：制度问答走「检索 → 拼上下文 → 生成 → 回填引用」；工单处置走 Agent，由模型自主决定调用哪几个工具，再汇总成结构化结论
+- **混合检索**：关键词（bigram + idf，无需模型、永远可用）与向量（bge-m3）两路加权融合，VectorStore 默认内存实现，`--spring.profiles.active=es` 一键切 Elasticsearch，上层代码零改动
+- **MCP 复用**：4 个工具经 `ToolCallbackProvider` 暴露为标准 MCP 工具，Spring 内部调用和 Claude Desktop / Cursor 等外部客户端用的是同一份定义
+- **两条底线**：数据不出域（本地 Ollama），结论可追溯（引用条款，检索不到就明说，模型不可用走 RETRIEVAL_ONLY 降级）
+
+<details>
+<summary>纯文本版架构图（终端 / 无图环境）</summary>
+
 ```
                       ┌──────────────────────────────────────────┐
   用户/Demo 页  ───►  │  AgentController                         │
@@ -51,6 +67,8 @@
               │ bigram+idf │ │(里程碑2换ES)│    qwen2.5:3b  数据不出域
               └────────────┘ └────────────┘    bge-m3 embedding
 ```
+
+</details>
 
 ## 三、快速开始
 
@@ -170,7 +188,7 @@ src/main/resources/
   static/     index.html（演示页）
 docker-compose.yml   里程碑 2 用：Elasticsearch 8.15 + Kibana
 scripts/             dev.sh  pull-model.sh  eval.sh
-docs/                产品原型.html  路线图.md
+docs/                产品原型.html  路线图.md  images/（架构图与运行截图）
 ```
 
 ## 九、里程碑

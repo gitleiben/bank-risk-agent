@@ -170,7 +170,7 @@ src/main/resources/
   static/     index.html（演示页）
 docker-compose.yml   里程碑 2 用：Elasticsearch 8.15 + Kibana
 scripts/             dev.sh  pull-model.sh  eval.sh
-docs/                面试讲述.md  路线图.md
+docs/                产品原型.html  路线图.md
 ```
 
 ## 九、里程碑
